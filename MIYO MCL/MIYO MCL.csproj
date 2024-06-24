@@ -1,0 +1,102 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows10.0.17763.0</TargetFramework>
+    <RootNamespace>MIYO_MCL</RootNamespace>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+    <ApplicationIcon>Asset\logo\Logo.ico</ApplicationIcon>
+    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+
+	<FileVersion>0.0.0.1</FileVersion>
+	<InformationalVersion>0.0.0.1</InformationalVersion>
+	<SupportedOSPlatformVersion>7.0</SupportedOSPlatformVersion>
+	 
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Asset\Fonts\iconfont.ttf" />
+    <None Remove="Asset\Fonts\qweather-icons.ttf" />
+    <None Remove="Asset\Image\IMG01.png" />
+    <None Remove="Asset\Image\IMG02.png" />
+    <None Remove="Asset\Image\IMG03.png" />
+    <None Remove="Asset\Image\IMG04.png" />
+    <None Remove="Asset\Image\IMG05.png" />
+    <None Remove="Asset\Image\IMG06.png" />
+    <None Remove="Asset\Image\IMG07.png" />
+    <None Remove="Asset\Image\IMG08.png" />
+    <None Remove="Asset\Image\IMG09.png" />
+    <None Remove="Asset\Image\Startup.png" />
+    <None Remove="Asset\Json\icons-list.json" />
+    <None Remove="Asset\Json\MIYOMCL-Config.json" />
+    <None Remove="Asset\logo\Logo.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Asset\Fonts\iconfont.ttf" />
+    <Resource Include="Asset\Fonts\qweather-icons.ttf">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Asset\Image\IMG01.png">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Asset\Image\IMG02.png" />
+    <Resource Include="Asset\Image\IMG06.png">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Asset\Image\IMG03.png">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Asset\Image\IMG04.png">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Asset\Image\IMG05.png">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Resource>
+    <EmbeddedResource Include="Asset\Json\icons-list.json">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Config\AppConfig.json">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <None Include="..\.editorconfig" Link=".editorconfig" />
+    <Resource Include="Asset\Image\IMG07.png" />
+    <Resource Include="Asset\Image\IMG08.png" />
+    <Resource Include="Asset\Image\IMG09.png" />
+    <Resource Include="Asset\Image\Startup.png" />
+    <Resource Include="Asset\logo\Logo.ico">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Asset\logo\Logo.png">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Resource>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MinecraftLaunch" Version="3.0.7" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="Panuon.WPF.UI" Version="1.2.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\MIYO Weather\MIYO Weather.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Properties\Settings.Designer.cs">
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Settings.settings</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+
+</Project>
