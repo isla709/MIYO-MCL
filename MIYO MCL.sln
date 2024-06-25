@@ -10,7 +10,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		.editorconfig = .editorconfig
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MIYO Weather", "MIYO Weather\MIYO Weather.csproj", "{BE370AA9-35FB-44F7-A340-DA06C5F373CD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MIYO.Weather", "MIYO Weather\MIYO.Weather.csproj", "{BE370AA9-35FB-44F7-A340-DA06C5F373CD}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

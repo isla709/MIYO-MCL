@@ -81,7 +81,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\MIYO Weather\MIYO Weather.csproj" />
+    <ProjectReference Include="..\MIYO Weather\MIYO.Weather.csproj" />
   </ItemGroup>
 
   <ItemGroup>
