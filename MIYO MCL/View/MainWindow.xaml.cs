@@ -1,15 +1,21 @@
 ﻿using Microsoft.Windows.Themes;
 using MinecraftLaunch.Classes.Interfaces;
 using MinecraftLaunch.Classes.Models.Auth;
+using MinecraftLaunch.Classes.Models.Game;
 using MinecraftLaunch.Classes.Models.Launch;
 using MinecraftLaunch.Components.Authenticator;
+using MinecraftLaunch.Components.Checker;
+using MinecraftLaunch.Components.Downloader;
+using MinecraftLaunch.Components.Fetcher;
 using MinecraftLaunch.Components.Launcher;
 using MinecraftLaunch.Components.Resolver;
+using MinecraftLaunch.Utilities;
 using MIYO_MCL.Class;
 using MIYO_MCL.View;
 using MIYO_Weather.Qweather;
 using MIYO_Weather.Qweather.QweatherReceiveType;
 using Panuon.WPF.UI;
+using System.Collections.Frozen;
 using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Text;
@@ -30,6 +36,7 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 
 #pragma warning disable CS8618
+#pragma warning disable CS8601
 
 namespace MIYO_MCL
 {
@@ -61,6 +68,7 @@ namespace MIYO_MCL
 
         public object selectedAccount;
 
+        public GameEntry selectedGameEntry;
 
         public MainWindow()
 
@@ -92,12 +100,50 @@ namespace MIYO_MCL
                 MIYO_BeautificationFunction.LoadCustomImage(this);
                 MIYO_BeautificationFunction.SetTheme(mainWindowInit.AppconfigManager, configData.Theme, this);
 
-
             }
             catch (Exception ex)
             {
                 Trace.WriteLine(ex.ToString());
             }
+
+
+            try
+            {
+                var configData = mainWindowInit.AppconfigManager.DeserializationAppConifgJson(mainWindowInit.AppconfigManager.ReadConfigFile());
+
+                IGameResolver resolver;
+                if (configData.GamePath.Equals("SoftwareDirectory"))
+                {
+                    resolver = new GameResolver(".minecraft");
+                }
+                else
+                {
+                    resolver = new GameResolver(configData.GamePath);
+                }
+
+                if (resolver == null)
+                {
+                    throw new Exception("resolver Not Init");
+                }
+
+                List<GameEntry> gameGameEntrys = resolver.GetGameEntitys().ToList();
+                gameGameEntrys.ForEach(game =>
+                {
+                    if (configData.LastSelectionVersion.Equals(game.Id))
+                    {
+                        selectedGameEntry = game;
+                        tb_GameVision.Text = selectedGameEntry.Id;
+                        tb_selectverName.Text = selectedGameEntry.Id;
+                    }
+
+                });
+            }
+            catch (Exception ex)
+            {
+                Trace.WriteLine(ex.ToString());
+            }
+
+
         }
 
         private void cb_mainBackground_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -211,15 +257,13 @@ namespace MIYO_MCL
 
         private void btn_StartGame_Click(object sender, RoutedEventArgs e)
         {
-            AccountList.OfflineAccounts.Add(MIYO_BSMCL.CreateOfflineUser("QW1"));
-            AccountList.OfflineAccounts.Add(MIYO_BSMCL.CreateOfflineUser("QW2"));
-            AccountList.OfflineAccounts.Add(MIYO_BSMCL.CreateOfflineUser("QW3"));
-            AccountList.OfflineAccounts.Add(MIYO_BSMCL.CreateOfflineUser("QW4"));
-            AccountList.OfflineAccounts.Add(MIYO_BSMCL.CreateOfflineUser("QW5"));
-            AccountList.OfflineAccounts.Add(MIYO_BSMCL.CreateOfflineUser("QW6"));
-            mainWindowInit.BSMCLUserManager.SerializationUserToFile(AccountList, mainWindowInit.BSMCLUserManager.SafeModeStatus);
-            
+           MIYO_BSMCLFunction.StartGame(this);
+        }
 
+
+        private void btn_switchTover1_Click(object sender, RoutedEventArgs e)
+        {
+            tc_leftplane.SelectedIndex = 1;
         }
 
         private void cb_AccountSaveMode_Loaded(object sender, RoutedEventArgs e)
@@ -233,7 +277,7 @@ namespace MIYO_MCL
             var configdata = mainWindowInit.AppconfigManager.DeserializationAppConifgJson(mainWindowInit.AppconfigManager.ReadConfigFile());
             configdata.AccountSaveMode = cb_AccountSaveMode.SelectedIndex.ToString();
             mainWindowInit.AppconfigManager.SerializationAndWriteConfigFile(configdata);
-            
+
         }
 
         private void btn_AccountSaveMode_info_Click(object sender, RoutedEventArgs e)
@@ -248,12 +292,26 @@ namespace MIYO_MCL
 
         private void btn_changeselectUser_Click(object sender, RoutedEventArgs e)
         {
-            selectedAccount = lb_UserList.SelectedItem;
+            try
+            {
 
-            var configdata = mainWindowInit.AppconfigManager.DeserializationAppConifgJson(mainWindowInit.AppconfigManager.ReadConfigFile());
-            configdata.LastSelectionUuid = ((Account)selectedAccount).Uuid.ToString();
-            mainWindowInit.AppconfigManager.SerializationAndWriteConfigFile(configdata);
-            tb_selectuserName.Text = ((Account)selectedAccount).Name;
+                if (lb_UserList.SelectedIndex == -1)
+                {
+                    Toast("请先选择用户");
+                    return;
+                }
+
+                selectedAccount = lb_UserList.SelectedItem;
+
+                var configdata = mainWindowInit.AppconfigManager.DeserializationAppConifgJson(mainWindowInit.AppconfigManager.ReadConfigFile());
+                configdata.LastSelectionUuid = ((Account)selectedAccount).Uuid.ToString();
+                mainWindowInit.AppconfigManager.SerializationAndWriteConfigFile(configdata);
+                tb_selectuserName.Text = ((Account)selectedAccount).Name;
+            }
+            catch(Exception ex) 
+            {    
+                Trace.WriteLine(ex);
+            }
         }
 
         private async void btn_delselectUser_Click(object sender, RoutedEventArgs e)
@@ -261,9 +319,9 @@ namespace MIYO_MCL
 
             try
             {
-                var result = MessageBoxX.Show(this,"确认要删除这个账号吗?","二次确认",MessageBoxButton.YesNo,MessageBoxIcon.Question,DefaultButton.NoCancel);
+                var result = MessageBoxX.Show(this, "确认要删除这个账号吗?", "二次确认", MessageBoxButton.YesNo, MessageBoxIcon.Question, DefaultButton.NoCancel);
 
-                if(result != MessageBoxResult.Yes)
+                if (result != MessageBoxResult.Yes)
                 {
                     return;
                 }
@@ -308,8 +366,8 @@ namespace MIYO_MCL
                 }
 
             }
-            catch (Exception ex) 
-            { 
+            catch (Exception ex)
+            {
                 Trace.WriteLine(ex);
             }
 
@@ -324,16 +382,16 @@ namespace MIYO_MCL
                 mainWindowInit.BSMCLUserManager.SerializationUserToFile(AccountList, mainWindowInit.BSMCLUserManager.SafeModeStatus);
                 Toast("创建成功");
             }
-            catch (Exception ex) 
+            catch (Exception ex)
             {
                 Trace.WriteLine(ex);
             }
-            
+
         }
 
         private void btn_RunCreateOffline_Click(object sender, RoutedEventArgs e)
         {
-            if(string.IsNullOrEmpty(tb_offlineName.Text))
+            if (string.IsNullOrEmpty(tb_offlineName.Text))
             {
                 Toast("玩家名不能为空");
                 return;
@@ -342,7 +400,148 @@ namespace MIYO_MCL
             mainWindowInit.BSMCLUserManager.SerializationUserToFile(AccountList, mainWindowInit.BSMCLUserManager.SafeModeStatus);
             tb_offlineName.Text = string.Empty;
             Toast("创建成功");
+
+        }
+
+        private void cb_GamePath_Loaded(object sender, RoutedEventArgs e)
+        {
+            var configdata = mainWindowInit.AppconfigManager.DeserializationAppConifgJson(mainWindowInit.AppconfigManager.ReadConfigFile());
+            if (configdata.GamePath.Equals("SoftwareDirectory"))
+            {
+                cb_GamePath.SelectedIndex = 0;
+            }
+
+
+        }
+
+        private void cb_GamePath_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            var configdata = mainWindowInit.AppconfigManager.DeserializationAppConifgJson(mainWindowInit.AppconfigManager.ReadConfigFile());
+            switch (cb_GamePath.SelectedIndex)
+            {
+                case 0:
+                    configdata.GamePath = "SoftwareDirectory";
+                    mainWindowInit.AppconfigManager.SerializationAndWriteConfigFile(configdata);
+                    break;
+
+                default:
+                    break;
+
+            }
+        }
+
+        private void lb_verList_Loaded(object sender, RoutedEventArgs e)
+        {
+            var configdata = mainWindowInit.AppconfigManager.DeserializationAppConifgJson(mainWindowInit.AppconfigManager.ReadConfigFile());
+            IGameResolver resolver;
+
+            if (configdata.GamePath.Equals("SoftwareDirectory"))
+            {
+                resolver = new GameResolver(".minecraft");
+            }
+            else
+            {
+                resolver = new GameResolver(configdata.GamePath);
+            }
+
+            if (resolver == null)
+            {
+                throw new Exception("resolver Not Init");
+            }
+
+            List<GameEntry> games = resolver.GetGameEntitys().ToList();
+            lb_verList.Items.Clear();
+            games.ForEach(g => { lb_verList.Items.Add(g); });
+
+
+
             
+        }
+
+        private void btn_changeselectver_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                if (lb_verList.SelectedIndex == -1)
+                {
+                    Toast("请先选择版本");
+                    return;
+                }
+
+                selectedGameEntry = ((GameEntry)lb_verList.SelectedItem);
+
+                var configdata = mainWindowInit.AppconfigManager.DeserializationAppConifgJson(mainWindowInit.AppconfigManager.ReadConfigFile());
+                configdata.LastSelectionVersion = selectedGameEntry.Id;
+                mainWindowInit.AppconfigManager.SerializationAndWriteConfigFile(configdata);
+                tb_GameVision.Text = selectedGameEntry.Id;
+                tb_selectverName.Text = selectedGameEntry.Id;
+
+            }
+            catch (Exception ex) 
+            {
+                Trace.WriteLine(ex);
+            }
+
+
+
+        }
+
+        private async void cb_javapath_Loaded(object sender, RoutedEventArgs e)
+        {
+            var configdata = mainWindowInit.AppconfigManager.DeserializationAppConifgJson(mainWindowInit.AppconfigManager.ReadConfigFile());
+
+            JavaFetcher javaFetcher = new JavaFetcher();
+            var Javas = await javaFetcher.FetchAsync();
+            var JavaList = Javas.ToList();
+            JavaList.ForEach(java => 
+            {
+                Trace.WriteLine($"发现Java：{java.JavaPath}  {java.JavaVersion} {java.JavaSlugVersion}  64位：{java.Is64Bit}");
+                cb_javapath.Items.Add(java);
+                if (configdata.JavaPath.Equals(java.JavaPath)) 
+                {
+                    cb_javapath.SelectedItem = java;
+                }
+            });
+        }
+
+        private void cb_javapath_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            var configdata = mainWindowInit.AppconfigManager.DeserializationAppConifgJson(mainWindowInit.AppconfigManager.ReadConfigFile());
+            configdata.JavaPath = ((JavaEntry)cb_javapath.SelectedItem).JavaPath;
+            mainWindowInit.AppconfigManager.SerializationAndWriteConfigFile(configdata);
+        }
+
+        private void ni_jvmmMax_Loaded(object sender, RoutedEventArgs e)
+        {
+            var configdata = mainWindowInit.AppconfigManager.DeserializationAppConifgJson(mainWindowInit.AppconfigManager.ReadConfigFile());
+            ni_jvmmMax.Value = int.Parse(configdata.JvmMaxMemory);
+        }
+
+        private void ni_jvmmMin_Loaded(object sender, RoutedEventArgs e)
+        {
+            var configdata = mainWindowInit.AppconfigManager.DeserializationAppConifgJson(mainWindowInit.AppconfigManager.ReadConfigFile());
+            ni_jvmmMin.Value = int.Parse(configdata.JvmMinMemory);
+        }
+
+        private void ni_jvmmMax_ValueChanged(object sender, Panuon.WPF.SelectedValueChangedRoutedEventArgs<double?> e)
+        {
+            var configdata = mainWindowInit.AppconfigManager.DeserializationAppConifgJson(mainWindowInit.AppconfigManager.ReadConfigFile());
+            if(ni_jvmmMax.Value != null)
+            {
+                configdata.JvmMaxMemory = ni_jvmmMax.Value.ToString();
+                mainWindowInit.AppconfigManager.SerializationAndWriteConfigFile(configdata);
+            }
+            
+        }
+
+        private void ni_jvmmMin_ValueChanged(object sender, Panuon.WPF.SelectedValueChangedRoutedEventArgs<double?> e)
+        {
+            var configdata = mainWindowInit.AppconfigManager.DeserializationAppConifgJson(mainWindowInit.AppconfigManager.ReadConfigFile());
+            if (ni_jvmmMin.Value != null)
+            {
+                configdata.JvmMinMemory = ni_jvmmMin.Value.ToString();
+                mainWindowInit.AppconfigManager.SerializationAndWriteConfigFile(configdata);
+            }
         }
     }
 

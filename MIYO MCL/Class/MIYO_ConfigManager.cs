@@ -20,6 +20,11 @@ namespace MIYO_MCL.Class
         public string CustomImage;
         public string AccountSaveMode;
         public string LastSelectionUuid;
+        public string GamePath;
+        public string LastSelectionVersion;
+        public string JavaPath;
+        public string JvmMaxMemory;
+        public string JvmMinMemory;
     }
 
 

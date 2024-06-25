@@ -7,12 +7,13 @@
         xmlns:pu="https://opensource.panuon.com/wpf-ui"
         mc:Ignorable="d"
         Title="MIYO Minecraft Launcher" 
-        Height="500" Width="800" MinHeight="400" MinWidth="800" WindowStartupLocation="CenterScreen" pu:WindowXCaption.HeaderAlignment="Center" pu:WindowXCaption.Background="Transparent" pu:WindowXCaption.Buttons="Close" pu:WindowXCaption.Height="25" Closed="WindowX_Closed" Loaded="WindowX_Loaded" Background="{DynamicResource ThemeBrush_MainBackGround}" Foreground="{DynamicResource ThemeBrush_FontColor}">
+        Height="500" Width="800" MinHeight="400" MinWidth="800" WindowStartupLocation="CenterScreen" pu:WindowXCaption.HeaderAlignment="Center" pu:WindowXCaption.Background="Transparent" pu:WindowXCaption.Buttons="Close" pu:WindowXCaption.Height="25" Closed="WindowX_Closed" Loaded="WindowX_Loaded" Background="{DynamicResource ThemeBrush_MainBackGround}" Foreground="{DynamicResource ThemeBrush_FontColor1}">
 
     <Grid>
 
-        
-        <TabControl Background="{x:Null}"
+
+        <TabControl x:Name="tc_leftplane"
+                    Background="{x:Null}"
                     TabStripPlacement="Left"
                     pu:TabControlHelper.ItemsFontFamily="{StaticResource PanuonIconFont}"
                     pu:TabControlHelper.ItemsWidth="80" 
@@ -90,13 +91,91 @@
                                 <ColumnDefinition Width="25*"/>
                             </Grid.ColumnDefinitions>
                             <Button x:Name="btn_StartGame" Content="StartGame" Grid.Column="0" Margin="0,0,1,0" pu:ButtonHelper.ClickEffect="Sink" Background="#36AAF7" Foreground="White" pu:ButtonHelper.CornerRadius="5" FontSize="14" FontFamily="AniMe Matrix - MB_EN" Click="btn_StartGame_Click"/>
-                            <Button pu:ButtonHelper.Icon="&#xe9da;" pu:IconHelper.FontFamily="{StaticResource PanuonIconFont}" pu:IconHelper.Margin="0" pu:IconHelper.FontSize="10" Grid.Column="1" Margin="1,0,0,0" pu:ButtonHelper.ClickEffect="Sink" Background="#36AAF7" Foreground="White" pu:ButtonHelper.CornerRadius="5"/>
+                            <Button x:Name="btn_switchTover1" pu:ButtonHelper.Icon="&#xe9da;" pu:IconHelper.FontFamily="{StaticResource PanuonIconFont}" pu:IconHelper.Margin="0" pu:IconHelper.FontSize="10" Grid.Column="1" Margin="1,0,0,0" pu:ButtonHelper.ClickEffect="Sink" Background="#36AAF7" Foreground="White" pu:ButtonHelper.CornerRadius="5" Click="btn_switchTover1_Click"/>
                         </Grid>
                     </Grid>
                 </Grid>
             </TabItem>
 
-            <TabItem Header= "&#xe9da; 版本" />
+            <TabItem Header= "&#xe9da; 版本" >
+
+                <TabControl TabStripPlacement="Top"
+                    Margin="-2"
+                    BorderThickness="0"
+                    Background="{DynamicResource ThemeBrush_MainBackGround}"
+                    pu:TabControlHelper.ItemsFontFamily="{StaticResource iconfont}"
+                    pu:TabControlHelper.ItemsWidth="90" 
+                    pu:TabControlHelper.ItemsHeight="25"
+                    pu:TabControlHelper.ItemsFontSize="14"
+                    pu:TabControlHelper.ItemsBackground="{DynamicResource ThemeBrush_MainBackGround}"
+                    pu:TabControlHelper.ItemsSelectedBackground="{DynamicResource ThemeBrush_MainBackGround}"
+                    pu:TabControlHelper.ItemsForeground="{DynamicResource ThemeBrush_UnSelectedColor}"
+                    pu:TabControlHelper.ItemsSelectedForeground="{DynamicResource ThemeBrush_SelectedColor}"
+                    pu:TabControlHelper.ItemsSelectedRibbonLineBrush="{DynamicResource ThemeBrush_SelectedColor}"
+                    pu:TabControlHelper.ItemsRibbonLineVisibility="Visible"
+                    pu:TabControlHelper.ItemsRibbonLinePlacement="Top"
+                    pu:TabControlHelper.ItemsRibbonLineThickness="3"
+                    pu:TabControlHelper.HeaderPanelBorderBrush="{DynamicResource ThemeBrush_UnSelectedColor}"
+                    pu:TabControlHelper.HeaderPanelBorderThickness="0,0,0,1">
+                        
+                    <TabItem Header="&#xf0161; 版本列表">
+
+                        <Grid Margin="-2">
+                            <Grid.RowDefinitions>
+                                <RowDefinition/>
+                                <RowDefinition Height="64"/>
+                            </Grid.RowDefinitions>
+                            <ListBox x:Name="lb_verList" Grid.Row="0" BorderThickness="0,0,0,1" Loaded="lb_verList_Loaded">
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="200"/>
+                                                <ColumnDefinition Width="5"/>
+                                                <ColumnDefinition Width="100"/>
+                                                <ColumnDefinition Width="5"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Grid.Column="0" Text="{Binding Id}" />
+                                            <TextBlock Grid.Column="1" Text=" " />
+                                            <TextBlock Grid.Column="2" Text="{Binding Version}" />
+                                            <TextBlock Grid.Column="3" Text=" " />
+                                            <TextBlock Grid.Column="4" Text="{Binding Type}" />
+                                        </Grid>
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
+                            <Grid Grid.Row="1" Background="{DynamicResource ThemeBrush_MainBackGround}">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="103"/>
+                                    <ColumnDefinition/>
+                                    <ColumnDefinition Width="204"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Foreground="{DynamicResource ThemeBrush_FontColor1}" Text="当前选择：" Margin="6,20,7,20" FontSize="18" Grid.Column="0"/>
+
+                                <Grid Grid.Column="2">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="32*"/>
+                                        <RowDefinition Height="32*"/>
+                                    </Grid.RowDefinitions>
+                                    <Button x:Name="btn_changeselectver" Content="更改到选中项"  Grid.Row="0" Margin="5,5,5,5" pu:ButtonHelper.ClickEffect="Sink" pu:ButtonHelper.CornerRadius="2" Background="#FF499DC8" Foreground="White" Click="btn_changeselectver_Click"/>
+                                    <Button x:Name="btn_delselectver" Content="删除选中项"  Grid.Row="1" Margin="5,5,5,5" pu:ButtonHelper.ClickEffect="Sink" pu:ButtonHelper.CornerRadius="2" Background="#FFC84949" Foreground="White" IsEnabled="False"/>
+                                </Grid>
+                                <TextBlock Foreground="{DynamicResource ThemeBrush_FontColor1}" x:Name="tb_selectverName" Text="" Margin="10,20,10,20" FontSize="18" Grid.Column="1" TextAlignment="Center"/>
+                            </Grid>
+                        </Grid>
+                    </TabItem>
+
+
+
+
+
+
+                </TabControl>
+
+            </TabItem>
+
+
             <TabItem Header= "&#xe9a2; 下载" />
 
             <TabItem Header= "&#xe990; 设置" >
@@ -325,7 +404,7 @@
                             </Border>
 
 
-                            <Border Background="{DynamicResource ThemeBrush_CompBackGround}" CornerRadius="5" Height="120" Margin="20,10,10,10">
+                            <Border Background="{DynamicResource ThemeBrush_CompBackGround}" CornerRadius="5" Height="160" Margin="20,10,10,10">
                                 <Border.Effect>
                                     <DropShadowEffect Color="Black" BlurRadius="10" ShadowDepth="1" Opacity="0.3"/>
                                 </Border.Effect>
@@ -342,12 +421,93 @@
                                 </Border.Style>
 
                                 <StackPanel Margin="5">
-                                    <TextBlock Text="账号设置" FontWeight="Bold" Foreground="{DynamicResource ThemeBrush_FontColor2}" Margin="5"/>
+                                    <TextBlock Text="游戏设置" FontWeight="Bold" Foreground="{DynamicResource ThemeBrush_FontColor2}" Margin="5"/>
+
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="103"/>
+                                            <ColumnDefinition/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Text="游戏目录：" Foreground="{DynamicResource ThemeBrush_FontColor2}" Margin="20,5,5,5" Grid.Column="0"/>
+                                        <ComboBox x:Name="cb_GamePath" Margin="5,5,10,5" Width="Auto" Grid.Column="1" 
+                                              pu:ComboBoxHelper.CornerRadius="2"
+                                              pu:ComboBoxHelper.OpenedCornerRadius="4,4,0,0"
+                                              BorderBrush="LightGray" BorderThickness="1"
+                                              pu:ComboBoxHelper.WatermarkForeground="Gray"
+                                              pu:ComboBoxHelper.ItemsHoverBackground="#22000000" pu:ComboBoxHelper.ItemsSelectedBackground="#FF000000" pu:ComboBoxHelper.ItemsSelectedForeground="#FFFFFF"
+                                              pu:DropDownHelper.ShadowColor="#36AAF7" pu:ComboBoxHelper.OpenedShadowColor="#36AAF7"
+                                              pu:ShadowHelper.BlurRadius="15" pu:ShadowHelper.ShadowDepth="5"
+                                              pu:DropDownHelper.BorderThickness="0" pu:DropDownHelper.CornerRadius="0,0,4,4" pu:DropDownHelper.VerticalOffset="-1" Loaded="cb_GamePath_Loaded" SelectionChanged="cb_GamePath_SelectionChanged">
+                                            
+                                            <ComboBoxItem Content="启动器目录下(./.minecraft)"/>
+
+                                        </ComboBox>
+                                    </Grid>
+
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="103"/>
+                                            <ColumnDefinition/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Text="Java路径：" Foreground="{DynamicResource ThemeBrush_FontColor2}" Margin="20,5,5,5" Grid.Column="0"/>
+                                        <ComboBox x:Name="cb_javapath" Margin="5,5,10,5" Width="Auto" Grid.Column="1" 
+                                              DisplayMemberPath ="JavaPath"
+                                              pu:ComboBoxHelper.CornerRadius="2"
+                                              pu:ComboBoxHelper.OpenedCornerRadius="4,4,0,0"
+                                              BorderBrush="LightGray" BorderThickness="1"
+                                              pu:ComboBoxHelper.WatermarkForeground="Gray"
+                                              pu:ComboBoxHelper.ItemsHoverBackground="#22000000" pu:ComboBoxHelper.ItemsSelectedBackground="#FF000000" pu:ComboBoxHelper.ItemsSelectedForeground="#FFFFFF"
+                                              pu:DropDownHelper.ShadowColor="#36AAF7" pu:ComboBoxHelper.OpenedShadowColor="#36AAF7"
+                                              pu:ShadowHelper.BlurRadius="15" pu:ShadowHelper.ShadowDepth="5"
+                                              pu:DropDownHelper.BorderThickness="0" pu:DropDownHelper.CornerRadius="0,0,4,4" pu:DropDownHelper.VerticalOffset="-1" SelectionChanged="cb_javapath_SelectionChanged" Loaded="cb_javapath_Loaded"/>
+                                    </Grid>
+
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="103"/>
+                                            <ColumnDefinition/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Text="Jvm最大内存：" Foreground="{DynamicResource ThemeBrush_FontColor2}" Margin="20,5,5,5" Grid.Column="0"/>
+                                        <pu:NumberInput x:Name="ni_jvmmMax" Grid.Column="1" Margin="5,5,10,5" CornerRadius="2" Loaded="ni_jvmmMax_Loaded" ValueChanged="ni_jvmmMax_ValueChanged"/>
+
+                                    </Grid>
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="103"/>
+                                            <ColumnDefinition/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Text="Jvm最小内存：" Foreground="{DynamicResource ThemeBrush_FontColor2}" Margin="20,5,5,5" Grid.Column="0"/>
+                                        <pu:NumberInput x:Name="ni_jvmmMin" Grid.Column="1" Margin="5,5,10,5" CornerRadius="2" Loaded="ni_jvmmMin_Loaded" ValueChanged="ni_jvmmMin_ValueChanged"/>
+
+                                    </Grid>
+
+                                </StackPanel>
+                            </Border>
+
+
+
+                            <Border Background="{DynamicResource ThemeBrush_CompBackGround}" CornerRadius="5" Height="120" Margin="20,10,10,10" Visibility="Hidden">
+                                <Border.Effect>
+                                    <DropShadowEffect Color="Black" BlurRadius="10" ShadowDepth="1" Opacity="0.3"/>
+                                </Border.Effect>
+
+                                <Border.Style>
+                                    <Style TargetType="Border">
+                                        <Style.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter Property="BorderBrush" Value="Transparent"/>
+                                                <Setter Property="BorderThickness" Value="1"/>
+                                            </Trigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Border.Style>
+
+                                <StackPanel Margin="5">
+                                    <TextBlock Text="XX设置" FontWeight="Bold" Foreground="{DynamicResource ThemeBrush_FontColor2}" Margin="5"/>
 
                                 </StackPanel>
 
                             </Border>
-
 
 
                         </StackPanel>
@@ -409,7 +569,7 @@
                                     <ColumnDefinition/>
                                     <ColumnDefinition Width="204"/>
                                 </Grid.ColumnDefinitions>
-                                <TextBlock Text="当前选择：" Margin="6,20,7,20" FontSize="18" Grid.Column="0"/>
+                                <TextBlock Text="当前选择：" Foreground="{DynamicResource ThemeBrush_FontColor1}" Margin="6,20,7,20" FontSize="18" Grid.Column="0"/>
 
                                 <Grid Grid.Column="2">
                                     <Grid.RowDefinitions>
@@ -419,7 +579,7 @@
                                     <Button x:Name="btn_changeselectUser" Content="更改到选中项"  Grid.Row="0" Margin="5,5,5,5" pu:ButtonHelper.ClickEffect="Sink" pu:ButtonHelper.CornerRadius="2" Background="#FF499DC8" Foreground="White" Click="btn_changeselectUser_Click"/>
                                     <Button x:Name="btn_delselectUser" Content="删除选中项"  Grid.Row="1" Margin="5,5,5,5" pu:ButtonHelper.ClickEffect="Sink" pu:ButtonHelper.CornerRadius="2" Background="#FFC84949" Foreground="White" Click="btn_delselectUser_Click"/>
                                 </Grid>
-                                <TextBlock x:Name="tb_selectuserName" Text="" Margin="10,20,10,20" FontSize="18" Grid.Column="1" TextAlignment="Center"/>
+                                <TextBlock Foreground="{DynamicResource ThemeBrush_FontColor1}" x:Name="tb_selectuserName" Text="" Margin="10,20,10,20" FontSize="18" Grid.Column="1" TextAlignment="Center"/>
                             </Grid>
                         </Grid>
                     </TabItem>
