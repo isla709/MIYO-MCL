@@ -11,7 +11,8 @@
 
     <Grid>
 
-
+        
+        
         <TabControl x:Name="tc_leftplane"
                     Background="{x:Null}"
                     TabStripPlacement="Left"
