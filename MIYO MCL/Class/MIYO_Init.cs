@@ -13,6 +13,8 @@ using MIYO_Weather.Qweather;
 using Newtonsoft.Json;
 using MIYO_Weather.Qweather.QweatherReceiveType;
 using System.Windows.Media.Imaging;
+using MinecraftLaunch.Classes.Models.Download;
+using MinecraftLaunch;
 
 namespace MIYO_MCL.Class
 {
@@ -44,6 +46,7 @@ namespace MIYO_MCL.Class
 
             BSMCLUserManager = new MIYO_BSMCLUserManager();
 
+            
 
             mainWindow.OnApplicationEventBegin += MainWindow_OnApplicationEventBegin;
             mainWindow.OnApplicationEventEnd += MainWindow_OnApplicationEventEnd;
@@ -59,9 +62,8 @@ namespace MIYO_MCL.Class
             SyncWeatherToControl.SyncToControl(mainWindow);
             BSMCLUserManager.SafeModeStatus = appConfig.AccountSaveMode == "1" ? false : true;
             BSMCLUserManager.VerifyFile(BSMCLUserManager.SafeModeStatus);
-            
 
-
+            MirrorDownloadManager.IsUseMirrorDownloadSource = true;
 
         }
 

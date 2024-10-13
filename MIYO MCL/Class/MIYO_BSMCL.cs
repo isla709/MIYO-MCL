@@ -15,8 +15,7 @@ namespace MIYO_MCL.Class
 {
     public class MIYO_BSMCL
     {
-        //public const string ApplicationClientID = "38deaf03-814e-4bf2-87e7-935ad42aaf2a";
-        public const string ApplicationClientID = "9fd44410-8ed7-4eb3-a160-9f1cc62c824c";
+        public const string ApplicationClientID = "38deaf03-814e-4bf2-87e7-935ad42aaf2a";
 
         public static OfflineAccount CreateOfflineUser(string _playername)
         {
@@ -39,8 +38,16 @@ namespace MIYO_MCL.Class
                 string code = devcode.UserCode;
 
                 Process.Start(new ProcessStartInfo { FileName = url, UseShellExecute = true });
-                Clipboard.SetText(code);
 
+                try
+                {
+                    Clipboard.SetText(code);
+                }
+                catch (Exception ex) 
+                {
+                    Trace.WriteLine(ex);
+                }
+                
                 Trace.WriteLine($"你的微软验证代码为：{code} (已复制到剪切板)请在浏览器完成验证微软验证", "INFO");
                 PendingHandler = PendingBox.Show($"你的微软验证代码为：{code} (已复制到剪切板)请在浏览器完成验证微软验证","微软验证",true);
 
@@ -58,12 +65,20 @@ namespace MIYO_MCL.Class
 
         }
 
-        public static async Task<MicrosoftAccount> ReflushMicrosoftUser(MicrosoftAccount oldaccount)
+        public static async Task<MicrosoftAccount?> ReflushMicrosoftUser(MicrosoftAccount oldaccount)
         {
             MicrosoftAuthenticator microsoftAuthenticator = new MicrosoftAuthenticator(oldaccount, ApplicationClientID, false);
-            
-            return await microsoftAuthenticator.AuthenticateAsync();
 
+            try
+            {
+                return await microsoftAuthenticator.AuthenticateAsync();
+            }
+            catch (Exception ex)
+            {
+               Trace.WriteLine(ex);
+               return null;
+            }
+            
         }
 
 

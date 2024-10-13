@@ -1,12 +1,15 @@
 ﻿using Microsoft.Windows.Themes;
+using MinecraftLaunch;
 using MinecraftLaunch.Classes.Interfaces;
 using MinecraftLaunch.Classes.Models.Auth;
 using MinecraftLaunch.Classes.Models.Game;
+using MinecraftLaunch.Classes.Models.Install;
 using MinecraftLaunch.Classes.Models.Launch;
 using MinecraftLaunch.Components.Authenticator;
 using MinecraftLaunch.Components.Checker;
 using MinecraftLaunch.Components.Downloader;
 using MinecraftLaunch.Components.Fetcher;
+using MinecraftLaunch.Components.Installer;
 using MinecraftLaunch.Components.Launcher;
 using MinecraftLaunch.Components.Resolver;
 using MinecraftLaunch.Utilities;
@@ -69,6 +72,16 @@ namespace MIYO_MCL
         public object selectedAccount;
 
         public GameEntry selectedGameEntry;
+
+        public VersionManifestEntry selectedInstallVersion;
+
+        public GameEntry selectedInstallForgeGameEntry;
+
+        public UInt16 installForgePageNum = 0;
+
+        public GameEntry selectedInstallFabricGameEntry;
+
+        public UInt16 installFabricPageNum = 0;
 
         public MainWindow()
 
@@ -257,7 +270,16 @@ namespace MIYO_MCL
 
         private void btn_StartGame_Click(object sender, RoutedEventArgs e)
         {
-           MIYO_BSMCLFunction.StartGame(this);
+            try 
+            {
+                MIYO_BSMCLFunction.StartGame(this);
+            }
+            catch(Exception ex) 
+            {
+                Trace.WriteLine(ex);
+                MessageBoxX.Show(this,"启动失败，详情查看日志","错误",MessageBoxButton.OK,MessageBoxIcon.Error);
+            }
+           
         }
 
 
@@ -432,27 +454,12 @@ namespace MIYO_MCL
 
         private void lb_verList_Loaded(object sender, RoutedEventArgs e)
         {
-            var configdata = mainWindowInit.AppconfigManager.DeserializationAppConifgJson(mainWindowInit.AppconfigManager.ReadConfigFile());
-            IGameResolver resolver;
-
-            if (configdata.GamePath.Equals("SoftwareDirectory"))
-            {
-                resolver = new GameResolver(".minecraft");
-            }
-            else
-            {
-                resolver = new GameResolver(configdata.GamePath);
-            }
-
-            if (resolver == null)
-            {
-                throw new Exception("resolver Not Init");
-            }
+            IGameResolver resolver = MIYO_BSMCLFunction.GetMIYOMCLGameResolver(this);
 
             List<GameEntry> games = resolver.GetGameEntitys().ToList();
             lb_verList.Items.Clear();
             games.ForEach(g => { lb_verList.Items.Add(g); });
-
+            
 
 
             
@@ -543,9 +550,368 @@ namespace MIYO_MCL
                 mainWindowInit.AppconfigManager.SerializationAndWriteConfigFile(configdata);
             }
         }
+
+        private async void lb_installVanllia_Loaded(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                lb_installVanilla.Items.Clear();
+                (await VanlliaInstaller.EnumerableGameCoreAsync()).ToList().ForEach(ver => lb_installVanilla.Items.Add(ver));
+            }
+            catch (Exception ex) 
+            {
+                MessageBox.Show(this,ex.Message);
+                Trace.WriteLine(ex.Message);
+            }
+            
+        
+        }
+
+        private void lb_installVanllia_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            try 
+            {
+                if (lb_installVanilla.SelectedItem is VersionManifestEntry)
+                {
+                    selectedInstallVersion = lb_installVanilla.SelectedItem as VersionManifestEntry;
+                    if (selectedInstallVersion != null)
+                    {
+                        tb_selectedInstall.Text = selectedInstallVersion.Id;
+                    }
+                    else
+                    {
+                        Toast("未知错误");
+                    }
+                }
+                else 
+                {
+                
+                }
+                
+            }
+            catch (Exception ex)
+            {
+                MessageBoxX.Show(ex.Message, "发生了一个错误", MessageBoxButton.OK, MessageBoxIcon.Error);
+            }
+            
+        }
+
+        private async void btn_installver_Click(object sender, RoutedEventArgs e)
+        {
+            IPendingHandler installPendingBox = null;
+            try
+            {
+                VanlliaInstaller installer = new VanlliaInstaller(MIYO_BSMCLFunction.GetMIYOMCLGameResolver(this), tb_selectedInstall.Text, MirrorDownloadManager.Bmcl);
+                installPendingBox = PendingBox.Show(this,"正在安装" + tb_selectedInstall.Text + " ", "原版安装器", false);
+                installer.ProgressChanged += (_, e) =>
+                {
+                    Dispatcher.Invoke(() =>
+                    {
+                        installPendingBox.UpdateMessage("正在安装" + tb_selectedInstall.Text + ": " + e.ProgressStatus);
+                    });
+
+                    Trace.WriteLine(e.ProgressStatus, "[原版安装器]");
+
+                };
+                installer.Completed += (_, e) =>
+                {
+                    installPendingBox.Close();
+                    Toast("安装完成");
+                };
+                await installer.InstallAsync();
+            }
+            catch (Exception ex) 
+            {
+                Trace.WriteLine(ex.Message, "Error");
+                if (installPendingBox != null)
+                {
+                    installPendingBox.Close();
+                }
+                MessageBox.Show(this,"安装失败", "原版安装器");
+
+            }
+
+
+        }
+
+        private void lb_installForge_Loaded(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                btn_forgeinstall.IsEnabled = false;
+                (sender as ListBox)?.Items.Clear();
+
+                IGameResolver resolver = MIYO_BSMCLFunction.GetMIYOMCLGameResolver(this);
+                List<GameEntry> games = resolver.GetGameEntitys().ToList();
+                games.ForEach(game => { (sender as ListBox)?.Items.Add(game); });
+
+
+                installForgePageNum = 0;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(this, ex.Message);
+                Trace.WriteLine(ex.Message);
+            }
+        }
+
+        private void btn_forgeinstall_back_Click(object sender, RoutedEventArgs e)
+        {
+
+            lb_installForge_Loaded(lb_installForge, e);
+            
+        }
+
+        private async void lb_installForge_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            var c_owner = sender as ListBox;
+            if (c_owner == null) 
+            {
+                MessageBox.Show(this, "未知错误！！！"); 
+                return; 
+            }
+            if(installForgePageNum == 0)
+            {
+                selectedInstallForgeGameEntry = (c_owner.SelectedItem as GameEntry);
+                if (selectedInstallForgeGameEntry == null) { return; }
+                var vername = selectedInstallForgeGameEntry.Id;
+                var ForgeResult = (await ForgeInstaller.EnumerableFromVersionAsync(vername)).ToList();
+                c_owner.Items.Clear();
+                ForgeResult.ForEach(forgeinfo => c_owner.Items.Add(forgeinfo));
+                installForgePageNum = 1;
+                btn_forgeinstall.IsEnabled = true;
+            }
+        }
+
+        private void lb_installForge_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            var c_owner = sender as ListBox;
+            if (c_owner == null)
+            {
+                MessageBox.Show(this, "未知错误！！！");
+                return;
+            }
+            if (installForgePageNum == 1)
+            {
+                var Selectedforgever = (c_owner.SelectedItem as ForgeInstallEntry);
+                if (Selectedforgever != null)
+                {
+                    tb_selectedforgeVer.Text = string.Format($"{Selectedforgever.ForgeVersion}  -{Selectedforgever.McVersion}");
+                }
+
+                
+            }
+        }
+
+        private async void btn_forgeinstall_Click(object sender, RoutedEventArgs e)
+        {
+            var configdata = mainWindowInit.AppconfigManager.DeserializationAppConifgJson(mainWindowInit.AppconfigManager.ReadConfigFile());
+            IPendingHandler installPendingBox = null;
+            if (installForgePageNum == 1)
+            {
+                try 
+                {
+                    var Selectedforgever = (lb_installForge.SelectedItem as ForgeInstallEntry);
+                    if (Selectedforgever == null)
+                    {
+                        return;
+                    }
+                    installPendingBox = PendingBox.Show(this,"正在安装" + tb_selectedforgeVer.Text + " ", "Forge安装器", false);
+                    ForgeInstaller installer = new ForgeInstaller(selectedInstallForgeGameEntry, Selectedforgever, configdata.JavaPath,null,MirrorDownloadManager.Bmcl);
+                    installer.ProgressChanged += (_, e) =>
+                    {
+                        Dispatcher.Invoke(() =>
+                        {
+                            installPendingBox.UpdateMessage("正在安装" + tb_selectedforgeVer.Text + ": " + e.ProgressStatus);
+                        });
+                        Trace.WriteLine(e.ProgressStatus, "[Forge安装器]");
+                    };
+                    installer.Completed += (_, e) =>
+                    {
+                        Toast("安装完成");
+                        Trace.WriteLine("安装完成","INFO");
+                    };
+                    MirrorDownloadManager.IsUseMirrorDownloadSource = false;
+                    await installer.InstallAsync();
+                    MirrorDownloadManager.IsUseMirrorDownloadSource = true;
+                    installPendingBox.Close();
+                }
+                catch (Exception ex)
+                {
+                    Trace.WriteLine(ex.Message, "Error");
+                    if (installPendingBox != null)
+                    {
+                        installPendingBox.Close();
+                    }
+                    MessageBoxX.Show(this, $"安装失败:{ex.Message}", "Forge安装器");
+
+                }
+
+
+
+            }
+        }
+
+        private void lb_installFabric_Loaded(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                btn_fabricinstall.IsEnabled = false;
+                (sender as ListBox)?.Items.Clear();
+
+                IGameResolver resolver = MIYO_BSMCLFunction.GetMIYOMCLGameResolver(this);
+                List<GameEntry> games = resolver.GetGameEntitys().ToList();
+                games.ForEach(game => { (sender as ListBox)?.Items.Add(game); });
+
+
+                installFabricPageNum = 0;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(this, ex.Message);
+                Trace.WriteLine(ex.Message);
+            }
+        }
+
+        private void btn_fabricinstall_back_Click(object sender, RoutedEventArgs e)
+        {
+            lb_installFabric_Loaded(lb_installFabric, e);
+        }
+
+        private async void lb_installFabric_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            var c_owner = sender as ListBox;
+            if (c_owner == null)
+            {
+                MessageBox.Show(this, "未知错误！！！");
+                return;
+            }
+            if (installFabricPageNum == 0)
+            {
+                selectedInstallFabricGameEntry = (c_owner.SelectedItem as GameEntry);
+                if (selectedInstallFabricGameEntry == null) { return; }
+                var vername = selectedInstallFabricGameEntry.Id;
+                var FabricResult = (await FabricInstaller.EnumerableFromVersionAsync(vername)).ToList();
+                c_owner.Items.Clear();
+                FabricResult.ForEach(fabricinfo => c_owner.Items.Add(fabricinfo));
+                installFabricPageNum = 1;
+                btn_fabricinstall.IsEnabled = true;
+            }
+        }
+
+        private void lb_installFabric_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            var c_owner = sender as ListBox;
+            if (c_owner == null)
+            {
+                MessageBox.Show(this, "未知错误！！！");
+                return;
+            }
+            if (installFabricPageNum == 1)
+            {
+                var Selectedfabricver = (c_owner.SelectedItem as FabricBuildEntry);
+                if (Selectedfabricver != null)
+                {
+                    tb_selectedfabricVer.Text = string.Format($"{Selectedfabricver.DisplayVersion}");
+                }
+
+
+            }
+        }
+
+        private async void btn_fabricinstall_Click(object sender, RoutedEventArgs e)
+        {
+            var configdata = mainWindowInit.AppconfigManager.DeserializationAppConifgJson(mainWindowInit.AppconfigManager.ReadConfigFile());
+            IPendingHandler installPendingBox = null;
+            if (installFabricPageNum == 1)
+            {
+                try
+                {
+                    var Selectedfabricver = (lb_installFabric.SelectedItem as FabricBuildEntry);
+                    if (Selectedfabricver == null)
+                    {
+                        return;
+                    }
+                    installPendingBox = PendingBox.Show(this, "正在安装" + tb_selectedfabricVer.Text + " ", "Fabric安装器", false);
+                    FabricInstaller installer = new FabricInstaller(selectedInstallFabricGameEntry, Selectedfabricver, null, MirrorDownloadManager.Bmcl);
+                    installer.ProgressChanged += (_, e) =>
+                    {
+                        Dispatcher.Invoke(() =>
+                        {
+                            installPendingBox.UpdateMessage("正在安装" + tb_selectedfabricVer.Text + ": " + e.ProgressStatus);
+                        });
+                        Trace.WriteLine(e.ProgressStatus, "[Fabric安装器]");
+                    };
+                    installer.Completed += (_, e) =>
+                    {
+                        
+                        Toast("安装完成");
+                        Trace.WriteLine("安装完成", "INFO");
+                    };
+                    await installer.InstallAsync();
+                    installPendingBox.Close();
+
+                }
+                catch (Exception ex)
+                {
+                    Trace.WriteLine(ex.Message, "Error");
+                    if (installPendingBox != null)
+                    {
+                        installPendingBox.Close();
+                    }
+                    MessageBoxX.Show(this, $"安装失败:{ex.Message}", "Forge安装器");
+
+                }
+
+
+
+            }
+        }
     }
 
-    
 
+
+    public class InstallForgeTemplateSelector : DataTemplateSelector
+    {
+        public DataTemplate IF0 { get; set; }
+        public DataTemplate IF1 { get; set; }
+
+        public override DataTemplate SelectTemplate(object item, DependencyObject container)
+        {
+            var entry = item as GameEntry; // 替换为实际的数据模型类型
+
+            // 根据是否存在 Id 决定使用哪个模板
+            if (!string.IsNullOrEmpty(entry?.Id))
+            {
+                return IF0;
+            }
+            else
+            {
+                return IF1;
+            }
+        }
+    }
+
+    public class InstallFabricTemplateSelector : DataTemplateSelector
+    {
+        public DataTemplate IF0 { get; set; }
+        public DataTemplate IF1 { get; set; }
+
+        public override DataTemplate SelectTemplate(object item, DependencyObject container)
+        {
+            var entry = item as GameEntry; // 替换为实际的数据模型类型
+
+            // 根据是否存在 Id 决定使用哪个模板
+            if (!string.IsNullOrEmpty(entry?.Id))
+            {
+                return IF0;
+            }
+            else
+            {
+                return IF1;
+            }
+        }
+    }
+    
 
 }
