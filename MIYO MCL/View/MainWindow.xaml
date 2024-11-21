@@ -57,6 +57,20 @@
             </Grid>
         </DataTemplate>
 
+        <DataTemplate x:Key="InstallQuiltPage1Template">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="200"/>
+                    <ColumnDefinition Width="5"/>
+                    <ColumnDefinition Width="100"/>
+                    <ColumnDefinition Width="5"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Text="{Binding BuildVersion}" />
+                <TextBlock Grid.Column="2" Text="{Binding McVersion}" />
+                <TextBlock Grid.Column="4" Text="{Binding LauncherMeta}" />
+            </Grid>
+        </DataTemplate>
 
         <local:InstallForgeTemplateSelector 
             x:Key="slt_InstallForgeTemplateSelector"
@@ -67,6 +81,11 @@
             x:Key="slt_InstallFabricTemplateSelector"
             IF0="{StaticResource InstallPage0Template}"
             IF1="{StaticResource InstallFabricPage1Template}" /> 
+        
+        <local:InstallFabricTemplateSelector 
+            x:Key="slt_InstallQuiltTemplateSelector"
+            IF0="{StaticResource InstallPage0Template}"
+            IF1="{StaticResource InstallQuiltPage1Template}" /> 
 
     </Window.Resources>
    
@@ -218,7 +237,7 @@
                                         <RowDefinition Height="32*"/>
                                     </Grid.RowDefinitions>
                                     <Button x:Name="btn_changeselectver" Content="更改到选中项"  Grid.Row="0" Margin="5,5,5,5" pu:ButtonHelper.ClickEffect="Sink" pu:ButtonHelper.CornerRadius="2" Background="#FF499DC8" Foreground="White" Click="btn_changeselectver_Click"/>
-                                    <Button x:Name="btn_delselectver" Content="删除选中项"  Grid.Row="1" Margin="5,5,5,5" pu:ButtonHelper.ClickEffect="Sink" pu:ButtonHelper.CornerRadius="2" Background="#FFC84949" Foreground="White" IsEnabled="False"/>
+                                    <Button x:Name="btn_resourceChecker" Content="执行资源检查"  Grid.Row="1" Margin="5,5,5,5" pu:ButtonHelper.ClickEffect="Sink" pu:ButtonHelper.CornerRadius="2" Background="#FF499DC8" Foreground="White" IsEnabled="True" Click="Btn_resourceChecker_OnClick"/>
                                 </Grid>
                                 <TextBlock Foreground="{DynamicResource ThemeBrush_FontColor1}" x:Name="tb_selectverName" Text="" Margin="10,20,10,20" FontSize="18" Grid.Column="1" TextAlignment="Center"/>
                             </Grid>
@@ -298,7 +317,7 @@
                         </Grid>
                     </TabItem>
 
-                    <TabItem Header="Forge" IsEnabled="False">
+                    <TabItem Header="Forge" IsEnabled="True">
 
                         <Grid Margin="-2">
                             <Grid.RowDefinitions>
@@ -328,13 +347,13 @@
                                     <Button x:Name="btn_forgeinstall" Content="安装" Margin="6,16,10,16" pu:ButtonHelper.ClickEffect="Sink" pu:ButtonHelper.CornerRadius="2" Background="#FF499DC8" Foreground="White" Grid.Column="1" Grid.RowSpan="2" Click="btn_forgeinstall_Click"/>
                                     <Button x:Name="btn_forgeinstall_back" Content="返回"  Grid.Row="0" Margin="10,16,10,16" pu:ButtonHelper.ClickEffect="Sink" pu:ButtonHelper.CornerRadius="2" Background="Gray" Foreground="White" Click="btn_forgeinstall_back_Click" Grid.RowSpan="2"/>
                                 </Grid>
-                                <TextBlock x:Name="tb_selectedforgeVer" Foreground="{DynamicResource ThemeBrush_FontColor1}" Text="" Margin="10,20,10,20" FontSize="18" Grid.Column="1" TextAlignment="Center"/>
+                                <TextBox x:Name="tb_selectedforgeVer" Foreground="{DynamicResource ThemeBrush_FontColor1}" Text="" Margin="10,20,10,20" FontSize="18" Grid.Column="1" TextAlignment="Center"/>
                             </Grid>
                         </Grid>
                     </TabItem>
 
 
-                    <TabItem Header="Fabric" IsEnabled="False">
+                    <TabItem Header="Fabric" IsEnabled="True">
 
                         <Grid Margin="-2">
                             <Grid.RowDefinitions>
@@ -364,37 +383,20 @@
                                     <Button x:Name="btn_fabricinstall" Content="安装" Margin="6,16,10,16" pu:ButtonHelper.ClickEffect="Sink" pu:ButtonHelper.CornerRadius="2" Background="#FF499DC8" Foreground="White" Grid.Column="1" Grid.RowSpan="2" Click="btn_fabricinstall_Click"/>
                                     <Button x:Name="btn_fabricinstall_back" Content="返回"  Grid.Row="0" Margin="10,16,10,16" pu:ButtonHelper.ClickEffect="Sink" pu:ButtonHelper.CornerRadius="2" Background="Gray" Foreground="White" Click="btn_fabricinstall_back_Click" Grid.RowSpan="2"/>
                                 </Grid>
-                                <TextBlock x:Name="tb_selectedfabricVer" Foreground="{DynamicResource ThemeBrush_FontColor1}" Text="" Margin="10,20,10,20" FontSize="18" Grid.Column="1" TextAlignment="Center"/>
+                                <TextBox x:Name="tb_selectedfabricVer" Foreground="{DynamicResource ThemeBrush_FontColor1}" Text="" Margin="10,20,10,20" FontSize="18" Grid.Column="1" TextAlignment="Center"/>
                             </Grid>
                         </Grid>
                     </TabItem>
 
-                    <TabItem Header="Quilt" IsEnabled="False">
+                    <TabItem Header="Quilt" IsEnabled="True">
 
                         <Grid Margin="-2">
                             <Grid.RowDefinitions>
                                 <RowDefinition/>
                                 <RowDefinition Height="64"/>
                             </Grid.RowDefinitions>
-                            <ListBox Grid.Row="0" BorderThickness="0,0,0,1" Loaded="lb_verList_Loaded">
-                                <ListBox.ItemTemplate>
-                                    <DataTemplate>
-                                        <Grid>
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="200"/>
-                                                <ColumnDefinition Width="5"/>
-                                                <ColumnDefinition Width="100"/>
-                                                <ColumnDefinition Width="5"/>
-                                                <ColumnDefinition Width="*"/>
-                                            </Grid.ColumnDefinitions>
-                                            <TextBlock Grid.Column="0" Text="{Binding Id}" />
-                                            <TextBlock Grid.Column="1" Text=" " />
-                                            <TextBlock Grid.Column="2" Text="{Binding Version}" />
-                                            <TextBlock Grid.Column="3" Text=" " />
-                                            <TextBlock Grid.Column="4" Text="{Binding Type}" />
-                                        </Grid>
-                                    </DataTemplate>
-                                </ListBox.ItemTemplate>
+                            <ListBox x:Name="lb_installQuilt" ItemTemplateSelector="{StaticResource slt_InstallQuiltTemplateSelector}" Grid.Row="0" BorderThickness="0,0,0,1" Loaded="lb_installQuilt_OnLoaded" MouseDoubleClick="Lb_installQuilt_OnMouseDoubleClick" SelectionChanged="Lb_installQuilt_OnSelectionChanged"> 
+
                             </ListBox>
                             <Grid Grid.Row="1" Background="{DynamicResource ThemeBrush_MainBackGround}">
                                 <Grid.ColumnDefinitions>
@@ -405,13 +407,18 @@
                                 <TextBlock Foreground="{DynamicResource ThemeBrush_FontColor1}" Text="当前选择：" Margin="6,20,7,20" FontSize="18" Grid.Column="0"/>
 
                                 <Grid Grid.Column="2">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="25*"/>
+                                        <ColumnDefinition Width="26*"/>
+                                    </Grid.ColumnDefinitions>
                                     <Grid.RowDefinitions>
                                         <RowDefinition Height="32*"/>
                                         <RowDefinition Height="32*"/>
                                     </Grid.RowDefinitions>
-                                    <Button Content="安装"  Grid.Row="0" Margin="5,16,10,16" pu:ButtonHelper.ClickEffect="Sink" pu:ButtonHelper.CornerRadius="2" Background="#FF499DC8" Foreground="White" Click="btn_changeselectver_Click" Grid.RowSpan="2"/>
+                                    <Button x:Name="btn_Quiltinstall" Content="安装" Margin="6,16,10,16" pu:ButtonHelper.ClickEffect="Sink" pu:ButtonHelper.CornerRadius="2" Background="#FF499DC8" Foreground="White" Grid.Column="1" Grid.RowSpan="2" Click="Btn_Quiltinstall_OnClick"/>
+                                    <Button x:Name="btn_Quiltinstall_back" Content="返回"  Grid.Row="0" Margin="10,16,10,16" pu:ButtonHelper.ClickEffect="Sink" pu:ButtonHelper.CornerRadius="2" Background="Gray" Foreground="White" Click="Btn_Quiltinstall_back_OnClick" Grid.RowSpan="2"/>
                                 </Grid>
-                                <TextBlock Foreground="{DynamicResource ThemeBrush_FontColor1}" Text="" Margin="10,20,10,20" FontSize="18" Grid.Column="1" TextAlignment="Center"/>
+                                <TextBox x:Name="tb_selectedQuiltVer" Foreground="{DynamicResource ThemeBrush_FontColor1}" Text="" Margin="10,20,10,20" FontSize="18" Grid.Column="1" TextAlignment="Center"/>
                             </Grid>
                         </Grid>
                     </TabItem>
@@ -875,7 +882,7 @@
                         <TextBlock Text="关于MIYOMCL" FontSize="24" FontWeight="Bold" Margin="0,0,0,20"/>
 
                         <!-- 软件信息 -->
-                        <TextBlock Text="版本号：Preview5" FontSize="16" Margin="0,0,0,10"/>
+                        <TextBlock Text="版本号：1.0" FontSize="16" Margin="0,0,0,10"/>
 
                         <!-- 开发团队 -->
                         <TextBlock Text="开发者：" FontSize="18" FontWeight="Bold" Margin="0,20,0,10"/>

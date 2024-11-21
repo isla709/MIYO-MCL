@@ -27,7 +27,6 @@ namespace MIYO_MCL.Class
         public MIYO_BSMCLUserManager BSMCLUserManager;
 
 
-
         public MIYO_Init(MainWindow mWindow) 
         {
             mainWindow = mWindow;
@@ -45,8 +44,7 @@ namespace MIYO_MCL.Class
             };
 
             BSMCLUserManager = new MIYO_BSMCLUserManager();
-
-            
+           
 
             mainWindow.OnApplicationEventBegin += MainWindow_OnApplicationEventBegin;
             mainWindow.OnApplicationEventEnd += MainWindow_OnApplicationEventEnd;

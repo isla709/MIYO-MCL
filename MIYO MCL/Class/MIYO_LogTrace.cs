@@ -61,8 +61,8 @@ namespace MIYO_MCL.Class
 
                 
             }
-
-            Trace.Listeners.Add(new ConsoleTraceListener());
+            
+            Trace.Listeners.Add( new ConsoleTraceListener());
             Trace.Listeners.Add(new TextWriterTraceListener(GetFullPath()));
             Trace.AutoFlush = true;
 

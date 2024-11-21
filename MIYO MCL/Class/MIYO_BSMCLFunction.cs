@@ -22,7 +22,7 @@ namespace MIYO_MCL.Class
 {
     public static class MIYO_BSMCLFunction
     {
-        public async static Task<AccountData> GetUserData(MainWindow mainWindow)
+        public static async Task<AccountData> GetUserData(MainWindow mainWindow)
         {
             
 
@@ -35,7 +35,7 @@ namespace MIYO_MCL.Class
 
         }
 
-        public async static void LoadUserList(MainWindow mainWindow)
+        public static async void LoadUserList(MainWindow mainWindow)
         {
             try
             {
@@ -89,16 +89,19 @@ namespace MIYO_MCL.Class
             }
         }
 
-        public async static void StartGame(MainWindow mainWindow)
+        public static async void StartGame(MainWindow mainWindow)
         {
+            Trace.WriteLine("检查启动设置", "INFO");
             if (mainWindow.selectedGameEntry == null)
             {
                 mainWindow.Toast("请选择要启动的版本");
+                Trace.WriteLine("请选择要启动的版本", "Error");
                 return;
             }
             if (mainWindow.selectedAccount == null)
             {
                 mainWindow.Toast("请选择要使用的账号");
+                Trace.WriteLine("请选择要使用的账号", "Error");
                 return;
             }
 
@@ -109,6 +112,7 @@ namespace MIYO_MCL.Class
                 return;
             }
 
+            Trace.WriteLine("启动游戏","INFO");
 
             mainWindow.btn_StartGame.Background = new SolidColorBrush(Colors.Red);
             mainWindow.btn_StartGame.IsEnabled = false;
@@ -255,7 +259,7 @@ namespace MIYO_MCL.Class
 
             watcher.Exited += (s, arg) =>
             {
-                Trace.WriteLine("游戏退出","INFO");
+                Trace.WriteLine($"游戏退出,Code：{arg.ExitCode}","INFO");
                 mainWindow.Dispatcher.Invoke(() =>
                 {
                     mainWindow.btn_StartGame.IsEnabled = true;
@@ -264,7 +268,7 @@ namespace MIYO_MCL.Class
             };
         }
 
-        static public IGameResolver GetMIYOMCLGameResolver(MainWindow mainWindow)
+        public static IGameResolver GetMIYOMCLGameResolver(MainWindow mainWindow)
         {
             var configdata = mainWindow.mainWindowInit.AppconfigManager.DeserializationAppConifgJson(mainWindow.mainWindowInit.AppconfigManager.ReadConfigFile());
             IGameResolver resolver;

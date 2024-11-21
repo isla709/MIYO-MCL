@@ -1,4 +1,4 @@
-﻿using Microsoft.Windows.Themes;
+using Microsoft.Windows.Themes;
 using MinecraftLaunch;
 using MinecraftLaunch.Classes.Interfaces;
 using MinecraftLaunch.Classes.Models.Auth;
@@ -37,6 +37,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using MinecraftLaunch.Classes.Models.Download;
 
 #pragma warning disable CS8618
 #pragma warning disable CS8601
@@ -82,6 +83,10 @@ namespace MIYO_MCL
         public GameEntry selectedInstallFabricGameEntry;
 
         public UInt16 installFabricPageNum = 0;
+
+        public GameEntry selectedInstallQuiltGameEntry;
+        
+        public UInt16 installQuiltPageNum = 0;
 
         public MainWindow()
 
@@ -613,10 +618,58 @@ namespace MIYO_MCL
                     Trace.WriteLine(e.ProgressStatus, "[原版安装器]");
 
                 };
-                installer.Completed += (_, e) =>
+                installer.Completed += async (_, e) =>
                 {
                     installPendingBox.Close();
                     Toast("安装完成");
+                    
+                    var pendingHandler = PendingBox.Show(this, "正在查找缺失资源。", "资源检查器", false);
+                    
+                    IGameResolver resolver = MIYO_BSMCLFunction.GetMIYOMCLGameResolver(this);
+
+                    List<GameEntry> games = resolver.GetGameEntitys().ToList();
+                    
+                    GameEntry checktarget = null;
+                    games.ForEach(g =>
+                    {
+                        if (tb_selectedInstall.Text == g.Id)
+                        {
+                            checktarget = g;
+                        }
+                        
+                    });
+                    if (checktarget == null)
+                    {
+                        pendingHandler.Close();
+                        return;
+                    }
+                    ResourceChecker resourceChecker = new ResourceChecker(checktarget);
+                    if (!await resourceChecker.CheckAsync()) 
+                    {
+                        pendingHandler.UpdateMessage($"已发现缺失:{resourceChecker.MissingResources.Count}");
+                        await Task.Delay(500);
+                        DownloadRequest request = new DownloadRequest() 
+                        {
+                            FileSizeThreshold = 50 * 1024 * 1024, // 阈值为 50MB
+                            MultiPartsCount = 4, // 分为4个部分下载
+                            MultiThreadsCount = 4, // 使用4个线程并发下载
+                            IsPartialContentSupported = true // 支持断点续传
+                        };
+                        ResourceDownloader resourceDownloader = new ResourceDownloader(request, resourceChecker.MissingResources,MirrorDownloadManager.Bmcl);
+                        resourceDownloader.ProgressChanged += (_,e) => 
+                        {
+                            this.Dispatcher.Invoke(() => 
+                            {
+                                pendingHandler.UpdateMessage($"资源下载中:{e.CompletedCount}/{e.TotalCount}");
+                            });
+                    
+                        };
+                        await resourceDownloader.DownloadAsync();
+                        this.Toast("资源下载结束");
+                    }
+                    pendingHandler.Close();
+                    
+                    
                 };
                 await installer.InstallAsync();
             }
@@ -709,15 +762,17 @@ namespace MIYO_MCL
             IPendingHandler installPendingBox = null;
             if (installForgePageNum == 1)
             {
+                
                 try 
                 {
+                                    
                     var Selectedforgever = (lb_installForge.SelectedItem as ForgeInstallEntry);
                     if (Selectedforgever == null)
                     {
                         return;
                     }
                     installPendingBox = PendingBox.Show(this,"正在安装" + tb_selectedforgeVer.Text + " ", "Forge安装器", false);
-                    ForgeInstaller installer = new ForgeInstaller(selectedInstallForgeGameEntry, Selectedforgever, configdata.JavaPath,null,MirrorDownloadManager.Bmcl);
+                    ForgeInstaller installer = new ForgeInstaller(selectedInstallForgeGameEntry, Selectedforgever, configdata.JavaPath,tb_selectedforgeVer.Text,MirrorDownloadManager.Bmcl);
                     installer.ProgressChanged += (_, e) =>
                     {
                         Dispatcher.Invoke(() =>
@@ -731,14 +786,16 @@ namespace MIYO_MCL
                         Toast("安装完成");
                         Trace.WriteLine("安装完成","INFO");
                     };
+
                     MirrorDownloadManager.IsUseMirrorDownloadSource = false;
                     await installer.InstallAsync();
                     MirrorDownloadManager.IsUseMirrorDownloadSource = true;
+                    
                     installPendingBox.Close();
                 }
                 catch (Exception ex)
                 {
-                    Trace.WriteLine(ex.Message, "Error");
+                    Trace.WriteLine(ex, "Error");
                     if (installPendingBox != null)
                     {
                         installPendingBox.Close();
@@ -833,7 +890,7 @@ namespace MIYO_MCL
                         return;
                     }
                     installPendingBox = PendingBox.Show(this, "正在安装" + tb_selectedfabricVer.Text + " ", "Fabric安装器", false);
-                    FabricInstaller installer = new FabricInstaller(selectedInstallFabricGameEntry, Selectedfabricver, null, MirrorDownloadManager.Bmcl);
+                    FabricInstaller installer = new FabricInstaller(selectedInstallFabricGameEntry, Selectedfabricver, tb_selectedfabricVer.Text, MirrorDownloadManager.Bmcl);
                     installer.ProgressChanged += (_, e) =>
                     {
                         Dispatcher.Invoke(() =>
@@ -850,7 +907,7 @@ namespace MIYO_MCL
                     };
                     await installer.InstallAsync();
                     installPendingBox.Close();
-
+                    
                 }
                 catch (Exception ex)
                 {
@@ -859,7 +916,171 @@ namespace MIYO_MCL
                     {
                         installPendingBox.Close();
                     }
-                    MessageBoxX.Show(this, $"安装失败:{ex.Message}", "Forge安装器");
+                    MessageBoxX.Show(this, $"安装失败:{ex.Message}", "Fabric安装器");
+
+                }
+
+
+
+            }
+        }
+
+        private async void Btn_resourceChecker_OnClick(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                if (lb_verList.SelectedIndex == -1)
+                {
+                    Toast("请先选择版本");
+                    return;
+                }
+                
+                var pendingHandler = PendingBox.Show(this, "正在查找缺失资源。", "资源检查器", false);
+                ResourceChecker resourceChecker = new ResourceChecker(((GameEntry)lb_verList.SelectedItem));
+                if (!await resourceChecker.CheckAsync()) 
+                {
+                    pendingHandler.UpdateMessage($"已发现缺失:{resourceChecker.MissingResources.Count}");
+                    await Task.Delay(500);
+                    DownloadRequest request = new DownloadRequest() 
+                    {
+                        FileSizeThreshold = 50 * 1024 * 1024, // 阈值为 50MB
+                        MultiPartsCount = 4, // 分为4个部分下载
+                        MultiThreadsCount = 4, // 使用4个线程并发下载
+                        IsPartialContentSupported = true // 支持断点续传
+                    };
+                    ResourceDownloader resourceDownloader = new ResourceDownloader(request, resourceChecker.MissingResources,MirrorDownloadManager.Bmcl);
+                    resourceDownloader.ProgressChanged += (_,e) => 
+                    {
+                        Dispatcher.Invoke(() => 
+                        {
+                            pendingHandler.UpdateMessage($"资源下载中:{e.CompletedCount}/{e.TotalCount}");
+                        });
+                    
+                    };
+                    await resourceDownloader.DownloadAsync();
+                    Toast("资源下载结束");
+                }
+                pendingHandler.Close();
+                
+
+            }
+            catch (Exception ex) 
+            {
+                Trace.WriteLine(ex);
+            }
+            
+            
+            
+        }
+
+        private void lb_installQuilt_OnLoaded(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                btn_Quiltinstall.IsEnabled = false;
+                (sender as ListBox)?.Items.Clear();
+
+                IGameResolver resolver = MIYO_BSMCLFunction.GetMIYOMCLGameResolver(this);
+                List<GameEntry> games = resolver.GetGameEntitys().ToList();
+                games.ForEach(game => { (sender as ListBox)?.Items.Add(game); });
+
+
+                installQuiltPageNum = 0;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(this, ex.Message);
+                Trace.WriteLine(ex.Message);
+            }
+        }
+
+        private async void Lb_installQuilt_OnMouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            var c_owner = sender as ListBox;
+            if (c_owner == null)
+            {
+                MessageBox.Show(this, "未知错误！！！");
+                return;
+            }
+            if (installQuiltPageNum == 0)
+            {
+                selectedInstallQuiltGameEntry = (c_owner.SelectedItem as GameEntry);
+                if (selectedInstallQuiltGameEntry == null) { return; }
+                var vername = selectedInstallQuiltGameEntry.Id;
+                var QuiltResult = (await QuiltInstaller.EnumerableFromVersionAsync(vername)).ToList();
+                c_owner.Items.Clear();
+                QuiltResult.ForEach(quiltinfo => c_owner.Items.Add(quiltinfo));
+                installQuiltPageNum = 1;
+                btn_Quiltinstall.IsEnabled = true;
+            }
+        }
+
+        private void Btn_Quiltinstall_back_OnClick(object sender, RoutedEventArgs e)
+        {
+            lb_installQuilt_OnLoaded(lb_installQuilt, e);
+        }
+
+        private void Lb_installQuilt_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            var c_owner = sender as ListBox;
+            if (c_owner == null)
+            {
+                MessageBox.Show(this, "未知错误！！！");
+                return;
+            }
+            if (installQuiltPageNum == 1)
+            {
+                var SelectedQuiltver = (c_owner.SelectedItem as QuiltBuildEntry);
+                if (SelectedQuiltver != null)
+                {
+                    tb_selectedQuiltVer.Text = string.Format($"{SelectedQuiltver.DisplayVersion}");
+                }
+
+
+            }
+        }
+
+        private async void Btn_Quiltinstall_OnClick(object sender, RoutedEventArgs e)
+        {
+            var configdata = mainWindowInit.AppconfigManager.DeserializationAppConifgJson(mainWindowInit.AppconfigManager.ReadConfigFile());
+            IPendingHandler installPendingBox = null;
+            if (installQuiltPageNum == 1)
+            {
+                try
+                {
+                    var SelectedQuiltver = (lb_installQuilt.SelectedItem as QuiltBuildEntry);
+                    if (SelectedQuiltver == null)
+                    {
+                        return;
+                    }
+                    installPendingBox = PendingBox.Show(this, "正在安装" + tb_selectedQuiltVer.Text + " ", "Quilt安装器", false);
+                    QuiltInstaller installer = new QuiltInstaller(selectedInstallQuiltGameEntry, SelectedQuiltver, tb_selectedQuiltVer.Text, MirrorDownloadManager.Bmcl);
+                    installer.ProgressChanged += (_, e) =>
+                    {
+                        Dispatcher.Invoke(() =>
+                        {
+                            installPendingBox.UpdateMessage("正在安装" + tb_selectedQuiltVer.Text + ": " + e.ProgressStatus);
+                        });
+                        Trace.WriteLine(e.ProgressStatus, "[Quilt安装器]");
+                    };
+                    installer.Completed += (_, e) =>
+                    {
+                        
+                        Toast("安装完成");
+                        Trace.WriteLine("安装完成", "INFO");
+                    };
+                    await installer.InstallAsync();
+                    installPendingBox.Close();
+                    
+                }
+                catch (Exception ex)
+                {
+                    Trace.WriteLine(ex.Message, "Error");
+                    if (installPendingBox != null)
+                    {
+                        installPendingBox.Close();
+                    }
+                    MessageBoxX.Show(this, $"安装失败:{ex.Message}", "Quilt安装器");
 
                 }
 
@@ -869,7 +1090,7 @@ namespace MIYO_MCL
         }
     }
 
-
+    
 
     public class InstallForgeTemplateSelector : DataTemplateSelector
     {
@@ -913,5 +1134,24 @@ namespace MIYO_MCL
         }
     }
     
+    public class InstallQuiltTemplateSelector : DataTemplateSelector
+    {
+        public DataTemplate IF0 { get; set; }
+        public DataTemplate IF1 { get; set; }
 
+        public override DataTemplate SelectTemplate(object item, DependencyObject container)
+        {
+            var entry = item as GameEntry; // 替换为实际的数据模型类型
+
+            // 根据是否存在 Id 决定使用哪个模板
+            if (!string.IsNullOrEmpty(entry?.Id))
+            {
+                return IF0;
+            }
+            else
+            {
+                return IF1;
+            }
+        }
+    }
 }
