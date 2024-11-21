@@ -1,6 +1,6 @@
 # MIYO-MCL
 
-**MIYO-MCL** 是一个 Minecraft Java 的游戏安装和管理工具，支持多种模组加载器，如 Forge 和 Fabric，旨在优化 Minecraft 的资源管理和模组加载流程。
+**MIYO-MCL** 是一个 Minecraft Java 的游戏安装和管理工具，支持多种模组加载器，如 Forge 和 Fabric，旨在优化 Minecraft 的资源管理和游戏安装流程。
 
 ## 特性
 
