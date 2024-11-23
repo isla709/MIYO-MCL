@@ -21,7 +21,7 @@
    ```bash
    git clone https://github.com/isla709/MIYO-MCL.git
    ```
-2. 使用 IDE（如 Visual Studio 或 IntelliJ IDEA）打开 `MIYO-MCL.sln` 项目文件。
+2. 使用 IDE（如 Visual Studio 或 Rider）打开 `MIYO MCL.sln` 项目文件。
 3. 构建并运行项目。
 
 ## 贡献指南
