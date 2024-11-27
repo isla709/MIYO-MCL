@@ -897,7 +897,7 @@
                         <TextBlock Text="关于MIYOMCL" FontSize="24" FontWeight="Bold" Margin="0,0,0,20"/>
 
                         <!-- 软件信息 -->
-                        <TextBlock Text="版本号：1.0" FontSize="16" Margin="0,0,0,10"/>
+                        <TextBlock Text="版本号：1.1" FontSize="16" Margin="0,0,0,10"/>
 
                         <!-- 开发团队 -->
                         <TextBlock Text="开发者：" FontSize="18" FontWeight="Bold" Margin="0,20,0,10"/>
