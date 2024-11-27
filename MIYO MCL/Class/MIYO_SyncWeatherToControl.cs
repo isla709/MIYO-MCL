@@ -1,5 +1,6 @@
 ﻿using MIYO_Weather.Qweather;
 using MIYO_Weather.Qweather.QweatherReceiveType;
+using MIYO_Weather.Qweather.QweatherIcon;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -105,15 +106,8 @@ namespace MIYO_MCL.Class
                 }
                 if (WeatherIcon != null)
                 {
-                    var iconmap = ReadIconMap();
-                    for (int i = 0; i < iconmap.data.Length; i++)
-                    {
-                        if (weatherNowData.now.icon == iconmap.data[i].icon_code)
-                        {
-                            string icon = char.ConvertFromUtf32(0xf1 * 256 + (i + 1));
-                            WeatherIcon.Text = icon;
-                        }
-                    }
+                    WeatherIcon.Text = QweatherIcon.ConvertToFontTable(weatherNowData.now.icon);
+
                 }
                 if (WeatherCity != null)
                 {
