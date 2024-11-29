@@ -99,7 +99,7 @@
             x:Name="tc_leftplane"
             Background="{x:Null}"
             TabStripPlacement="Left"
-            BorderBrush="Gray"
+            BorderBrush="{DynamicResource ThemeBrush_FontColor1}"
             BorderThickness="0,1,0,0"
             FontFamily="{StaticResource PanuonIconFont}"
             

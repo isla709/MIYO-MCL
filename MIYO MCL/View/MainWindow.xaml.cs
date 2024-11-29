@@ -632,9 +632,23 @@ namespace MIYO_MCL
 
         private async void btn_installver_Click(object sender, RoutedEventArgs e)
         {
+            
+
+            if (lb_installVanilla.SelectedIndex == -1)
+            {
+                new Flyout()
+                {
+                    Content = new TextBlock() { Text = "   请选择一个版本   " },
+                    Placement = ModernWpf.Controls.Primitives.FlyoutPlacementMode.Top
+                }.ShowAt((sender as Button));
+                return;
+            }
+
             IPendingHandler installPendingBox = null;
             try
             {
+                
+
                 VanlliaInstaller installer = new VanlliaInstaller(MIYO_BSMCLFunction.GetMIYOMCLGameResolver(this), tb_selectedInstall.Text, MirrorDownloadManager.Bmcl);
                 installPendingBox = PendingBox.Show(this,"正在安装" + tb_selectedInstall.Text + " ", "原版安装器", false);
                 installer.ProgressChanged += (_, e) =>
@@ -716,7 +730,7 @@ namespace MIYO_MCL
                 {
                     installPendingBox.Close();
                 }
-                MessageBox.Show(this,"安装失败", "原版安装器");
+                MessageBoxX.Show(this,"安装失败", "原版安装器");
 
             }
 
@@ -794,6 +808,16 @@ namespace MIYO_MCL
 
         private async void btn_forgeinstall_Click(object sender, RoutedEventArgs e)
         {
+            if (lb_installForge.SelectedIndex == -1)
+            {
+                new Flyout()
+                {
+                    Content = new TextBlock() { Text = "   请选择一个版本   " },
+                    Placement = ModernWpf.Controls.Primitives.FlyoutPlacementMode.Top
+                }.ShowAt((sender as Button));
+                return;
+            }
+
             var configdata = mainWindowInit.AppconfigManager.DeserializationAppConifgJson(mainWindowInit.AppconfigManager.ReadConfigFile());
             IPendingHandler installPendingBox = null;
             if (installForgePageNum == 1)
@@ -917,6 +941,16 @@ namespace MIYO_MCL
 
         private async void btn_fabricinstall_Click(object sender, RoutedEventArgs e)
         {
+            if (lb_installFabric.SelectedIndex == -1)
+            {
+                new Flyout()
+                {
+                    Content = new TextBlock() { Text = "   请选择一个版本   " },
+                    Placement = ModernWpf.Controls.Primitives.FlyoutPlacementMode.Top
+                }.ShowAt((sender as Button));
+                return;
+            }
+
             var configdata = mainWindowInit.AppconfigManager.DeserializationAppConifgJson(mainWindowInit.AppconfigManager.ReadConfigFile());
             IPendingHandler installPendingBox = null;
             if (installFabricPageNum == 1)
@@ -1090,6 +1124,16 @@ namespace MIYO_MCL
 
         private async void Btn_Quiltinstall_OnClick(object sender, RoutedEventArgs e)
         {
+            if (lb_installQuilt.SelectedIndex == -1)
+            {
+                new Flyout()
+                {
+                    Content = new TextBlock() { Text = "   请选择一个版本   " },
+                    Placement = ModernWpf.Controls.Primitives.FlyoutPlacementMode.Top
+                }.ShowAt((sender as Button));
+                return;
+            }
+
             var configdata = mainWindowInit.AppconfigManager.DeserializationAppConifgJson(mainWindowInit.AppconfigManager.ReadConfigFile());
             IPendingHandler installPendingBox = null;
             if (installQuiltPageNum == 1)
