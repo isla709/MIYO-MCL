@@ -10,7 +10,7 @@
     <ApplicationIcon>Asset\logo\Logo.ico</ApplicationIcon>
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
 
-	<FileVersion>1.1.0.0</FileVersion>
+	<FileVersion>1.2.0.0</FileVersion>
 	<InformationalVersion>0.0.0.1</InformationalVersion>
 	<SupportedOSPlatformVersion>7.0</SupportedOSPlatformVersion>
 	 
@@ -78,6 +78,7 @@
     <PackageReference Include="EleCho.WpfSuite" Version="0.9.9" />
     <PackageReference Include="MinecraftLaunch" Version="3.1.0-preview08" />
     <PackageReference Include="MIYO.Weather" Version="1.0.0" />
+    <PackageReference Include="ModernWpfUI" Version="0.9.6" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="Panuon.WPF.UI" Version="1.2.4.8" />
   </ItemGroup>

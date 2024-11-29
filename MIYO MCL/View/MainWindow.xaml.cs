@@ -38,6 +38,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using MinecraftLaunch.Classes.Models.Download;
+using ModernWpf.Controls;
 
 #pragma warning disable CS8618
 #pragma warning disable CS8601
@@ -53,7 +54,7 @@ namespace MIYO_MCL
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
-    public partial class MainWindow : WindowX
+    public partial class MainWindow : Window
     {
 
         public event MIYO_OnApplicationEventBeginHandler? OnApplicationEventBegin;
@@ -324,8 +325,10 @@ namespace MIYO_MCL
 
                 if (lb_UserList.SelectedIndex == -1)
                 {
-                    Toast("请先选择用户");
-                    return;
+                    new Flyout() {
+                        Content = new TextBlock() { Text = "   请先选择用户   " }
+                    }.ShowAt((sender as Button));   
+                   return;
                 }
 
                 selectedAccount = lb_UserList.SelectedItem;
@@ -407,7 +410,13 @@ namespace MIYO_MCL
                 var microsoftAccount = await MIYO_BSMCL.CreateMicrosoftUser(this);
                 AccountList.MicrosoftAccounts.Add(microsoftAccount);
                 mainWindowInit.BSMCLUserManager.SerializationUserToFile(AccountList, mainWindowInit.BSMCLUserManager.SafeModeStatus);
-                Toast("创建成功");
+
+                new Flyout()
+                {
+                    Content = new TextBlock() { Text = "   添加成功   " }
+                }.ShowAt((sender as Button));
+
+             
             }
             catch (Exception ex)
             {
@@ -420,13 +429,23 @@ namespace MIYO_MCL
         {
             if (string.IsNullOrEmpty(tb_offlineName.Text))
             {
-                Toast("玩家名不能为空");
+                
+                new Flyout()
+                {
+                    Content = new TextBlock() { Text = "   玩家名不能为空   " },
+                    Placement = ModernWpf.Controls.Primitives.FlyoutPlacementMode.Bottom
+                }.ShowAt((sender as Button));
                 return;
             }
             AccountList.OfflineAccounts.Add(MIYO_BSMCL.CreateOfflineUser(tb_offlineName.Text));
             mainWindowInit.BSMCLUserManager.SerializationUserToFile(AccountList, mainWindowInit.BSMCLUserManager.SafeModeStatus);
             tb_offlineName.Text = string.Empty;
-            Toast("创建成功");
+            new Flyout()
+            {
+                Content = new TextBlock() { Text = "   添加成功   " }
+            }.ShowAt((sender as Button));
+
+
 
         }
 
@@ -476,7 +495,13 @@ namespace MIYO_MCL
             {
                 if (lb_verList.SelectedIndex == -1)
                 {
-                    Toast("请先选择版本");
+
+                    new Flyout()
+                    {
+                        Content = new TextBlock() { Text = "   请先选择版本   " },
+                        Placement = ModernWpf.Controls.Primitives.FlyoutPlacementMode.Top
+                    }.ShowAt((sender as Button));
+
                     return;
                 }
 
@@ -507,7 +532,7 @@ namespace MIYO_MCL
             var JavaList = Javas.ToList();
             JavaList.ForEach(java => 
             {
-                Trace.WriteLine($"发现Java：{java.JavaPath}  {java.JavaVersion} {java.JavaSlugVersion}  64位：{java.Is64Bit}");
+                Trace.WriteLine($"发现Java：{java.JavaPath}  {java.JavaVersion} {java.JavaSlugVersion}  64位：{java.Is64Bit}","INFO");
                 cb_javapath.Items.Add(java);
                 if (configdata.JavaPath.Equals(java.JavaPath)) 
                 {
@@ -585,7 +610,11 @@ namespace MIYO_MCL
                     }
                     else
                     {
-                        Toast("未知错误");
+                        new Flyout()
+                        {
+                            Content = new TextBlock() { Text = "   未知错误   " },
+                            Placement = ModernWpf.Controls.Primitives.FlyoutPlacementMode.Bottom
+                        }.ShowAt((sender as ListBox));
                     }
                 }
                 else 
@@ -621,8 +650,12 @@ namespace MIYO_MCL
                 installer.Completed += async (_, e) =>
                 {
                     installPendingBox.Close();
-                    Toast("安装完成");
+                    new Flyout()
+                    {
+                        Content = new TextBlock() { Text = "   安装完成   " }
+                    }.ShowAt((sender as Button));
                     
+
                     var pendingHandler = PendingBox.Show(this, "正在查找缺失资源。", "资源检查器", false);
                     
                     IGameResolver resolver = MIYO_BSMCLFunction.GetMIYOMCLGameResolver(this);
@@ -665,7 +698,10 @@ namespace MIYO_MCL
                     
                         };
                         await resourceDownloader.DownloadAsync();
-                        this.Toast("资源下载结束");
+                        new Flyout()
+                        {
+                            Content = new TextBlock() { Text = "   资源下载结束   " }
+                        }.ShowAt((sender as Button));
                     }
                     pendingHandler.Close();
                     
@@ -783,7 +819,10 @@ namespace MIYO_MCL
                     };
                     installer.Completed += (_, e) =>
                     {
-                        Toast("安装完成");
+                        new Flyout()
+                        {
+                            Content = new TextBlock() { Text = "   安装完成   " }
+                        }.ShowAt((sender as Button));
                         Trace.WriteLine("安装完成","INFO");
                     };
 
@@ -901,8 +940,11 @@ namespace MIYO_MCL
                     };
                     installer.Completed += (_, e) =>
                     {
-                        
-                        Toast("安装完成");
+
+                        new Flyout()
+                        {
+                            Content = new TextBlock() { Text = "   安装完成   " }
+                        }.ShowAt((sender as Button));
                         Trace.WriteLine("安装完成", "INFO");
                     };
                     await installer.InstallAsync();
@@ -931,7 +973,10 @@ namespace MIYO_MCL
             {
                 if (lb_verList.SelectedIndex == -1)
                 {
-                    Toast("请先选择版本");
+                    new Flyout()
+                    {
+                        Content = new TextBlock() { Text = "   请先选择版本   " }
+                    }.ShowAt((sender as Button));
                     return;
                 }
                 
@@ -958,7 +1003,10 @@ namespace MIYO_MCL
                     
                     };
                     await resourceDownloader.DownloadAsync();
-                    Toast("资源下载结束");
+                    new Flyout()
+                    {
+                        Content = new TextBlock() { Text = "   资源下载结束   " }
+                    }.ShowAt((sender as Button));
                 }
                 pendingHandler.Close();
                 
@@ -1065,8 +1113,11 @@ namespace MIYO_MCL
                     };
                     installer.Completed += (_, e) =>
                     {
-                        
-                        Toast("安装完成");
+
+                        new Flyout()
+                        {
+                            Content = new TextBlock() { Text = "   安装完成   " }
+                        }.ShowAt((sender as Button));
                         Trace.WriteLine("安装完成", "INFO");
                     };
                     await installer.InstallAsync();

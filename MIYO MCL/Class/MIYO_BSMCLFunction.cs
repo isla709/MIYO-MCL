@@ -8,6 +8,7 @@ using MinecraftLaunch.Components.Downloader;
 using MinecraftLaunch.Components.Launcher;
 using MinecraftLaunch.Components.Resolver;
 using MinecraftLaunch.Utilities;
+using ModernWpf.Controls;
 using Panuon.WPF.UI;
 using Panuon.WPF.UI.Configurations;
 using System;
@@ -16,6 +17,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Controls;
 using System.Windows.Media;
 
 namespace MIYO_MCL.Class
@@ -94,13 +96,19 @@ namespace MIYO_MCL.Class
             Trace.WriteLine("检查启动设置", "INFO");
             if (mainWindow.selectedGameEntry == null)
             {
-                mainWindow.Toast("请选择要启动的版本");
+                new Flyout()
+                {
+                    Content = new TextBlock() { Text = "   请选择要启动的版本   " }
+                }.ShowAt(mainWindow.btn_StartGame);
                 Trace.WriteLine("请选择要启动的版本", "Error");
                 return;
             }
             if (mainWindow.selectedAccount == null)
             {
-                mainWindow.Toast("请选择要使用的账号");
+                new Flyout()
+                {
+                    Content = new TextBlock() { Text = "   请选择要使用的账号   " }
+                }.ShowAt(mainWindow.btn_StartGame);
                 Trace.WriteLine("请选择要使用的账号", "Error");
                 return;
             }
@@ -108,7 +116,10 @@ namespace MIYO_MCL.Class
             var configdata = mainWindow.mainWindowInit.AppconfigManager.DeserializationAppConifgJson(mainWindow.mainWindowInit.AppconfigManager.ReadConfigFile());
             if (string.IsNullOrEmpty(configdata.JavaPath))
             {
-                mainWindow.Toast("请选择Java");
+                new Flyout()
+                {
+                    Content = new TextBlock() { Text = "   请选择Java   " }
+                }.ShowAt(mainWindow.btn_StartGame);
                 return;
             }
 
@@ -137,7 +148,11 @@ namespace MIYO_MCL.Class
                     MicrosoftAccount? StartGameAccount = await MIYO_BSMCL.ReflushMicrosoftUser((MicrosoftAccount)mainWindow.selectedAccount);
                     if (StartGameAccount == null)
                     {
-                        mainWindow.Toast("验证微软账户失败");
+                        
+                        new Flyout()
+                        {
+                            Content = new TextBlock() { Text = "   验证微软账户失败   " }
+                        }.ShowAt(mainWindow.btn_StartGame);
                         mainWindow.btn_StartGame.IsEnabled = true;
                         mainWindow.btn_StartGame.Background = new SolidColorBrush(System.Windows.Media.Color.FromRgb(54, 170, 247));
                         return;
@@ -199,7 +214,6 @@ namespace MIYO_MCL.Class
                     
                 };
                 await resourceDownloader.DownloadAsync();
-                mainWindow.Toast("资源下载结束");
             }
             pendingHandler.Close();
 

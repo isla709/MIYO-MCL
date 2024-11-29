@@ -3,13 +3,19 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:local="clr-namespace:MIYO_MCL"
              xmlns:pu="https://opensource.panuon.com/wpf-ui"
+             xmlns:mui="http://schemas.modernwpf.com/2019"
              StartupUri="View/MainWindow.xaml">
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
+
+                <mui:ThemeResources />
+                <mui:XamlControlsResources />
                 
                 <pu:StyleDictionary Includes="All"/>
+                <!--  -->
 
+                
                 <ResourceDictionary>
 
                     <FontFamily x:Key="QWeatherIcons">
